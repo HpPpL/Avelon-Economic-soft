@@ -4,7 +4,7 @@ import docx
 import openpyxl
 from docx.shared import Inches
 from docx.shared import Pt
-
+from Charts-to-image import
 
 class WordRecorder:
     def __init__(self, excel_file_path):
@@ -37,7 +37,7 @@ class WordRecorder:
     def record(self):
         self.save_document()
 
-    def save_document(self, path="Result/"):
+    def save_document(self, path="Results/"):
         self.doc.save(path + self.filename)
 
     def __del__(self):

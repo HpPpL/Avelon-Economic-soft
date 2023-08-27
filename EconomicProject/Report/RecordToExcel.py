@@ -37,7 +37,7 @@ class ExcelRecorder:
         for i, row in enumerate(ws_src.iter_rows(min_row=index, max_row=index), 1):
             for cell in row:
                 ExcelRecorder.copy_cell(ws_src, cell.row, cell.column,
-                                   ws_trg, ws_trg_last_row + i, cell.column)
+                                        ws_trg, ws_trg_last_row + i, cell.column)
 
     def copy_sheet(self, name):
         ws_trg_last_row = self.record_sheet.max_row
@@ -86,12 +86,12 @@ class ExcelRecorder:
         )
 
         align = Alignment(horizontal='center',
-                              vertical='center',
-                              # text_rotation=0,
-                              # wrap_text=False,
-                              # shrink_to_fit=False,
-                              # indent=0
-                              )
+                          vertical='center',
+                          # text_rotation=0,
+                          # wrap_text=False,
+                          # shrink_to_fit=False,
+                          # indent=0
+                          )
 
         for row in CopyLists.title_list:
             target_cell = row.split(":")[0]
@@ -117,7 +117,7 @@ class ExcelRecorder:
         self.set_dimensions()
         self.__save_changes()
 
-    def __save_changes(self, path="Result/"):
+    def __save_changes(self, path="Results/"):
         name = 'Record_'
         self.workbook.save(path + name + os.path.basename(self.file_path))
 
