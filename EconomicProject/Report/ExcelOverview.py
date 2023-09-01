@@ -1,12 +1,14 @@
 import openpyxl
 import os
 from copy import copy
-from CopyLists import CopyLists
+from Constants import Constants
 from openpyxl.styles import Alignment, Font
+import time
 
 
 class ExcelRecorder:
     def __init__(self, file_path):
+        self.time = time.time()
         self.file_path = file_path
         self.workbook = openpyxl.load_workbook(self.file_path)
         self.sheets = self.workbook.sheetnames
@@ -43,7 +45,7 @@ class ExcelRecorder:
         ws_trg_last_row = self.record_sheet.max_row
         self.record_sheet.cell(row=ws_trg_last_row, column=1, value=name)
 
-        for index in CopyLists.copy_dict[name]:
+        for index in Constants.COPY_DICT[name]:
             ExcelRecorder.copy_row(index, self.workbook[name], self.record_sheet)
 
     def copy_sheets(self):
@@ -55,7 +57,7 @@ class ExcelRecorder:
             self.copy_sheet(name)
 
     def merge_cells(self):
-        for block_name, block in CopyLists.merge_head_dict.items():
+        for block_name, block in Constants.MERGE_HEAD_DICT.items():
             if block:
                 for row in block:
                     self.record_sheet.merge_cells(row)
@@ -67,7 +69,7 @@ class ExcelRecorder:
 
     def copy_graph(self):
         output_dir = "Charts"
-        for name, dict_property in CopyLists.graph_dict.items():
+        for name, dict_property in Constants.GRAPH_DICT.items():
             for index in dict_property['index']:
                 source_chart = self.workbook[name]._charts[index]
                 new_chart = copy(source_chart)
@@ -93,7 +95,7 @@ class ExcelRecorder:
                           # indent=0
                           )
 
-        for row in CopyLists.title_list:
+        for row in Constants.TITLE_LIST:
             target_cell = row.split(":")[0]
             self.record_sheet[target_cell].font = ft
             self.record_sheet[target_cell].alignment = align
@@ -104,7 +106,7 @@ class ExcelRecorder:
         for column in width_list:
             self.record_sheet.column_dimensions[column].width = 15
 
-        # for size, lst in CopyLists.height_dict.items():
+        # for size, lst in Constants.height_dict.items():
         #     for row in lst:
         #         self.record_sheet.row_dimensions[row].height = size
 
@@ -118,18 +120,19 @@ class ExcelRecorder:
         self.__save_changes()
 
     def __save_changes(self, path="Results/"):
-        name = 'Record_'
-        self.workbook.save(path + name + os.path.basename(self.file_path))
+        name = 'Overview_'
+        self.workbook.save(path + name + os.path.basename(self.file_path).split('_')[1])
 
     def __close_workbook(self):
         self.workbook.close()
 
     def __del__(self):
         print(f"Файл {os.path.basename(self.file_path)} закрыт!")
+        print(f"Время обработки составило {round(time.time() - self.time, 2)} c.")
         self.__close_workbook()
 
 
 if __name__ == "__main__":
-    file_path = "../Examples/Report_E3.xlsx"
+    file_path = "../Examples/Report_E2.xlsx"
     wb = ExcelRecorder(file_path)
     wb.record()
