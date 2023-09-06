@@ -34,6 +34,13 @@ class WordRecorder:
     def wrap_column_data(worksheet, column, num=10):
         return [cell[0].value for cell in worksheet.iter_rows(min_col=column, max_col=column)][1:num]
 
+    @staticmethod
+    def safe_round(value, num):
+        if value is None:
+            return ""
+        else:
+            return round(float(value), num)
+
     def create_picture(self, path='Charts'):
         ChartsToImage(self.workbook).charts_to_image()
 
@@ -42,11 +49,11 @@ class WordRecorder:
         npv_text = worksheet['A29'].value
         # Для начала создадим таблицу
         data = {
-            'NPV': ['млн.руб', round(float(worksheet['D13'].value), 2)],
-            'IRR': ['доли ед.', round(float(worksheet['D14'].value), 2)],
-            'Индекс доходности': ['', round(float(worksheet['D17'].value), 2)],
-            'ПРОСТОЙ СРОК ОКУПАЕМОСТИ (ГОД)': ['год', round(float(worksheet['D18'].value), 2)],
-            'ДИСКОНТИРОВАННЫЙ СРОК ОКУПАЕМОСТИ (ГОД)': ['год', round(float(worksheet['D19'].value), 2)]
+            'NPV': ['млн.руб', self.safe_round(worksheet['D13'].value, 2)],
+            'IRR': ['доли ед.', self.safe_round(worksheet['D14'].value, 2)],
+            'Индекс доходности': ['', self.safe_round(worksheet['D17'].value, 2)],
+            'ПРОСТОЙ СРОК ОКУПАЕМОСТИ (ГОД)': ['год', self.safe_round(worksheet['D18'].value, 2)],
+            'ДИСКОНТИРОВАННЫЙ СРОК ОКУПАЕМОСТИ (ГОД)': ['год', self.safe_round(worksheet['D19'].value, 2)]
         }
 
         table = self.doc.add_table(rows=0, cols=3)
@@ -87,12 +94,12 @@ class WordRecorder:
         worksheet = self.workbook['Credits']
         data = {
             'Метод': ['', worksheet['C15'].value],
-            'ПОСТУПЛЕНИЕ': ['млн.руб', round(float(worksheet['D16'].value), 2)],
-            'Момент выдачи': ['год', round(float(worksheet['D17'].value), 2)],
-            'ЛЬГОТНЫЙ ПЕРИОД': ['год', round(float(worksheet['D18'].value), 2)],
-            'ПРОЦЕНТНАЯ СТАВКА': ['доли ед.', round(float(worksheet['D19'].value), 2)],
-            'ДЛИТЕЛЬНОСТЬ ЗАЙМА': ['год', round(float(worksheet['D20'].value), 2)],
-            'КАПИТАЛИЗАЦИЯ ПРОЦЕНТОВ': ['год', round(float(worksheet['D21'].value), 2)]
+            'ПОСТУПЛЕНИЕ': ['млн.руб', self.safe_round(worksheet['D16'].value, 2)],
+            'Момент выдачи': ['год', self.safe_round(worksheet['D17'].value, 2)],
+            'ЛЬГОТНЫЙ ПЕРИОД': ['год', self.safe_round(worksheet['D18'].value, 2)],
+            'ПРОЦЕНТНАЯ СТАВКА': ['доли ед.', self.safe_round(worksheet['D19'].value, 2)],
+            'ДЛИТЕЛЬНОСТЬ ЗАЙМА': ['год', self.safe_round(worksheet['D20'].value, 2)],
+            'КАПИТАЛИЗАЦИЯ ПРОЦЕНТОВ': ['год', self.safe_round(worksheet['D21'].value, 2)]
         }
 
         self.doc.add_picture('Charts/график5.png', width=docx.shared.Cm(16))
@@ -151,6 +158,6 @@ class WordRecorder:
 
 
 if __name__ == "__main__":
-    excel_path = "Results/Overview_E3.xlsx"
+    excel_path = "Results/Overview_E1.xlsx"
     dc = WordRecorder(excel_path)
     dc.record()
