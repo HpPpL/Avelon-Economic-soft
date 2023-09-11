@@ -41,6 +41,7 @@ class ChartsToImage:
         plt.grid(True)
 
         plt.savefig(path + "график1.png", bbox_inches="tight")
+        plt.close()
 
     def elastic_to_image(self, path='Charts/'):
         # График общей чувствительности
@@ -68,6 +69,7 @@ class ChartsToImage:
         plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
         plt.grid(True)
         plt.savefig(path + "график2.png", bbox_inches="tight")
+        plt.close()
 
         # График общей чувствительности по CAPEX
         data = {
@@ -97,6 +99,7 @@ class ChartsToImage:
         plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
         plt.grid(True)
         plt.savefig(path + "график3.png", bbox_inches="tight")
+        plt.close()
 
         # График общей чувствительности по OPEX
         data = {
@@ -125,6 +128,7 @@ class ChartsToImage:
         plt.legend(bbox_to_anchor=(1, 1))
         plt.grid(True)
         plt.savefig(path + "график4.png", bbox_inches="tight")
+        plt.close()
 
     def montecarlo_to_image(self, path='Charts/'):
         wrap_column_data = ChartsToImage.wrap_column_data
@@ -147,6 +151,7 @@ class ChartsToImage:
         plt.xticks(rotation=45, ha='right')  # Поворот подписей на оси x для улучшения читаемости
         plt.tight_layout()  # Автоматический подбор параметров для красивого размещения элементов
         plt.savefig(path + "график5.png", bbox_inches="tight")
+        plt.close()
 
     def charts_to_image(self):
         ChartsToImage.npv_to_image(self)

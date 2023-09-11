@@ -11,7 +11,7 @@ if __name__ == "__main__":
     LOF = list(map(lambda x: "../Examples/" + x, LOF))
 
     # Переходим к обработке
-    for file in LOF[1:]:
+    for file in LOF[:]:
         word_path = f'Results/Overview_{file.split("_")[1]}'
         ExcelRecorder(file).record()
         WordRecorder(word_path).record()

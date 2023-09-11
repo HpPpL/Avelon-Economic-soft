@@ -101,14 +101,34 @@ class ExcelRecorder:
             self.record_sheet[target_cell].alignment = align
             self.record_sheet.merge_cells(row)
 
-    def set_dimensions(self):
-        width_list = ['A', 'B', 'C']
-        for column in width_list:
-            self.record_sheet.column_dimensions[column].width = 15
+    def rotate_cells(self):
+        for pos in Constants.ROTATE_LIST:
+            self.record_sheet[pos].alignment = Alignment(textRotation=0, wrap_text=True, horizontal='center',
+                                                         vertical='center')
 
-        # for size, lst in Constants.height_dict.items():
-        #     for row in lst:
-        #         self.record_sheet.row_dimensions[row].height = size
+    def set_dimensions(self):
+        width_columns = ['A', 'B', 'C']
+        width_values = [22, 30, 15]
+        for i, column in enumerate(width_columns):
+            self.record_sheet.column_dimensions[column].width = width_values[i]
+
+        for row, size in Constants.HEIGHT_DICT.items():
+            self.record_sheet['B' + str(row)].alignment = Alignment(wrap_text=True, horizontal='left',
+                                                                    vertical='center')
+
+    def hide_sheets(self):
+        for sheet in self.sheets[:len(self.sheets)]:
+            self.workbook[sheet].sheet_state = 'hidden'
+
+    def npv_checker(self):
+        ws = self.workbook['NPV']
+        ts = self.workbook['Record']
+
+        if ws['D18'].value is None:
+            ts['D144'].value = 'Не окупается'
+
+        if ws['D19'].value is None:
+            ts['D145'].value = 'Не окупается'
 
     def record(self):
         self.copy_sheets()
@@ -116,7 +136,10 @@ class ExcelRecorder:
         self.npv_text()
         self.copy_graph()
         self.make_title()
+        self.rotate_cells()
         self.set_dimensions()
+        self.hide_sheets()
+        self.npv_checker()
         self.__save_changes()
 
     def __save_changes(self, path="Results/"):
@@ -127,8 +150,8 @@ class ExcelRecorder:
         self.workbook.close()
 
     def __del__(self):
-        print(f"Файл {os.path.basename(self.file_path)} закрыт!")
-        print(f"Время обработки составило {round(time.time() - self.time, 2)} c.")
+        print(f"Файл {'Overview_' + os.path.basename(self.file_path).split('_')[1]} сохранен!")
+        print(f"Время обработки составило {round(time.time() - self.time, 2)} c.\n----")
         self.__close_workbook()
 
 

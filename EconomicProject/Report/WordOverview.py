@@ -1,13 +1,14 @@
 import os.path
 
-import docx
 import openpyxl
-from docx.shared import Inches
-from docx.shared import Pt
-from ChartsToImage import ChartsToImage
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
-from docx.enum.table import WD_TABLE_ALIGNMENT
+import docx
+from docx.shared import Inches, Pt
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT, WD_ALIGN_PARAGRAPH
+from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
+from docxcompose.composer import Composer
 import time
+
+from ChartsToImage import ChartsToImage
 
 
 class WordRecorder:
@@ -37,7 +38,7 @@ class WordRecorder:
     @staticmethod
     def safe_round(value, num):
         if value is None:
-            return ""
+            return "Не окупается"
         else:
             return round(float(value), num)
 
@@ -49,12 +50,15 @@ class WordRecorder:
         npv_text = worksheet['A29'].value
         # Для начала создадим таблицу
         data = {
-            'NPV': ['млн.руб', self.safe_round(worksheet['D13'].value, 2)],
-            'IRR': ['доли ед.', self.safe_round(worksheet['D14'].value, 2)],
-            'Индекс доходности': ['', self.safe_round(worksheet['D17'].value, 2)],
-            'ПРОСТОЙ СРОК ОКУПАЕМОСТИ (ГОД)': ['год', self.safe_round(worksheet['D18'].value, 2)],
-            'ДИСКОНТИРОВАННЫЙ СРОК ОКУПАЕМОСТИ (ГОД)': ['год', self.safe_round(worksheet['D19'].value, 2)]
+            'NPV': ['млн.руб', round(worksheet['D13'].value, 2)],
+            'IRR': ['доли ед.', round(worksheet['D14'].value, 2)],
+            'Индекс доходности': ['', round(worksheet['D17'].value, 2)],
+            'Простой срок окупаемости (год)': ['год', self.safe_round(worksheet['D18'].value, 2)],
+            'Дисконтированный срок окупаемости (год)': ['год', self.safe_round(worksheet['D19'].value, 2)]
         }
+
+        # Создаем текст оглавления таблицы
+        self.doc.add_heading('Критерии эффективности проекта', 1)
 
         table = self.doc.add_table(rows=0, cols=3)
         table.style = 'Table Grid'
@@ -63,14 +67,20 @@ class WordRecorder:
         # Добавление данных в таблицу
         for key, values in data.items():
             row_cells = table.add_row().cells
-            row_cells[0].text = key
-            row_cells[1].text = values[0]
-            row_cells[2].text = str(values[1])
+            p = row_cells[0].add_paragraph(key)
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+            p = row_cells[1].add_paragraph(values[0])
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+            p = row_cells[2].add_paragraph(str(values[1]))
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
         # Объединим ячейку
         row = table.rows[2]
         cell1, cell2 = row.cells[:2]
         cell1.merge(cell2)
+        # table.cell(0, 0).vertical_alignment = WD_ALIGN_VERTICAL.TOP
 
         # Создаем текст вывода
         self.doc.add_heading('Анализ критериев эффективности', 1)
@@ -93,13 +103,13 @@ class WordRecorder:
     def create_montecarlo_page(self):
         worksheet = self.workbook['Credits']
         data = {
-            'Метод': ['', worksheet['C15'].value],
-            'ПОСТУПЛЕНИЕ': ['млн.руб', self.safe_round(worksheet['D16'].value, 2)],
-            'Момент выдачи': ['год', self.safe_round(worksheet['D17'].value, 2)],
-            'ЛЬГОТНЫЙ ПЕРИОД': ['год', self.safe_round(worksheet['D18'].value, 2)],
-            'ПРОЦЕНТНАЯ СТАВКА': ['доли ед.', self.safe_round(worksheet['D19'].value, 2)],
-            'ДЛИТЕЛЬНОСТЬ ЗАЙМА': ['год', self.safe_round(worksheet['D20'].value, 2)],
-            'КАПИТАЛИЗАЦИЯ ПРОЦЕНТОВ': ['год', self.safe_round(worksheet['D21'].value, 2)]
+            'МЕТОД': ['', worksheet['C15'].value.rstrip()],
+            'Поступление': ['млн.руб', round(worksheet['D16'].value, 2)],
+            'Момент выдачи': ['год', round(worksheet['D17'].value, 2)],
+            'Льготный период': ['год', round(worksheet['D18'].value, 2)],
+            'Процентная ставка': ['доли ед.', round(worksheet['D19'].value, 2)],
+            'Длительность займа': ['год', round(worksheet['D20'].value, 2)],
+            'Капитализация процентов': ['год', round(worksheet['D21'].value, 2)]
         }
 
         self.doc.add_picture('Charts/график5.png', width=docx.shared.Cm(16))
@@ -112,9 +122,14 @@ class WordRecorder:
         # Добавление данных в таблицу
         for key, values in data.items():
             row_cells = table.add_row().cells
-            row_cells[0].text = key
-            row_cells[1].text = values[0]
-            row_cells[2].text = str(values[1])
+            p = row_cells[0].add_paragraph(key)
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+            p = row_cells[1].add_paragraph(values[0])
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+            p = row_cells[2].add_paragraph(str(values[1]))
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
         # Объединим ячейку
         row = table.rows[0]
@@ -150,11 +165,15 @@ class WordRecorder:
         self.save_document()
 
     def save_document(self, path="Results/"):
-        self.doc.save(path + self.filename)
+        master = docx.Document('Template.docx')
+        master.add_page_break()
+        composer = Composer(master)
+        composer.append(self.doc)
+        composer.save(path + self.filename)
 
     def __del__(self):
-        print(f"Файл {self.filename} закрыт!")
-        print(f"Время обработки составило {round(time.time() - self.time, 2)} с.")
+        print(f"Файл {self.filename} сохранен!")
+        print(f"Время обработки составило {round(time.time() - self.time, 2)} с.\n----------------")
 
 
 if __name__ == "__main__":
